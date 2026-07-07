@@ -1,0 +1,91 @@
+name: Work24 Spotfire 33 Monitor
+
+on:
+  schedule:
+    - cron: "1/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      COURSE_NAME: "Spotfire를 활용한 반도체 공정/결함 상관관계 분석"
+      LIST_URL: "https://www.work24.go.kr/hr/a/a/1100/trnnCrsInf2.do?dghtSe=A&traingMthCd=A&tracseTme=8&endDate=20270707&keyword1=&keyword2=&pageSize=10&orderBy=ASC&startDate_datepicker=2026-07-07&currentTab=1&topMenuYn=&pop=&tracseId=AIG20260000545906&pageRow=10&totamtSuptYn=A&ncsSearchKeyword=&keywordTrngNm=&crseTracseSeNum=&keywordType=1&gb=&keyword=spotfire%EB%A5%BC+%ED%99%9C%EC%9A%A9%ED%95%9C+%EB%B0%98%EB%8F%84%EC%B2%B4+%EA%B3%B5%EC%A0%95%2F%EA%B2%B0%ED%95%A8+%EC%83%81%EA%B4%80%EA%B4%80%EA%B3%84+%EB%B6%84%EC%84%9D&kDgtlYn=&area=00%7C%EC%A0%84%EA%B5%AD+%EC%A0%84%EC%B2%B4&orderKey=2&mberSe=&kdgLinkYn=&srchType=all_type&crseTracseSe=A%7C%EB%94%94%EC%A7%80%ED%84%B8%EC%8B%A0%EA%B8%B0%EC%88%A0%EB%B6%84%EC%95%BC+%EC%A0%84%EC%B2%B4&tranRegister=&mberId=&i2=A&pageId=6&areaSearchKeyword=&programMenuIdentification=EBG020000000313&crseTracseSeKDT=A_KDT%7C%ED%9B%88%EB%A0%A8%EC%9C%A0%ED%98%95+%EC%A0%84%EC%B2%B4&endDate_datepicker=2027-07-07&monthGubun=&pageOrder=2ASC&pageIndex=1&bgrlInstYn=&startDate=20260707&ncs=&gvrnInstt=&selectNCSKeyword=&compareArgArr=&action=trnnCrsInf2Post.do"
+      DETAIL_URL: "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl1.do?tracseId=AIG20250000539953&tracseTme=32&cstmConsTme=&crseTracseSe=C0105&trainstCstmrId=500020049962&tracseReqstsCd=&focusId="
+    steps:
+      - name: Check Work24 pages
+        id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          list_html="$(mktemp)"
+          detail_html="$(mktemp)"
+          combined="$(mktemp)"
+          user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+
+          curl -fsSL --compressed --max-time 20 -A "$user_agent" "$LIST_URL" -o "$list_html"
+          curl -fsSL --compressed --max-time 20 -A "$user_agent" "$DETAIL_URL" -o "$detail_html"
+          cat "$list_html" "$detail_html" > "$combined"
+
+          if ! grep -Fq "$COURSE_NAME" "$combined"; then
+            echo "Course marker was not found; skipping alert."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if grep -Eq "33[[:space:]]*회차|33[[:space:]]*회|31회/33회|32회/33회|tracseTme=33" "$combined"; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            evidence="$(grep -Eo "33.{0,60}|.{0,60}33회차|31회/33회|32회/33회|tracseTme=33.{0,80}" "$combined" | head -n 5 | tr '\n' ' ')"
+            status="$(grep -Eo "모집[^<[:space:]]+|수강신청인원.{0,80}|모집인원.{0,80}|실시현황.{0,80}" "$combined" | head -n 5 | tr '\n' ' ')"
+            {
+              echo "evidence<<EOF"
+              echo "${evidence:-33회차 marker detected}"
+              echo "EOF"
+              echo "status<<EOF"
+              echo "${status:-상태 문구 추출 실패}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "No 33rd session yet."
+          echo "found=false" >> "$GITHUB_OUTPUT"
+
+      - name: Send Telegram alert
+        if: steps.check.outputs.found == 'true'
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EVIDENCE: ${{ steps.check.outputs.evidence }}
+          STATUS_TEXT: ${{ steps.check.outputs.status }}
+        run: |
+          set -euo pipefail
+
+          now="$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
+          message="$(cat <<MSG
+[긴급] Work24 Spotfire 33회차 떴습니다
+
+감지 시각: ${now}
+증거: ${EVIDENCE}
+상태: ${STATUS_TEXT}
+
+상세:
+${DETAIL_URL}
+
+검색:
+${LIST_URL}
+
+로그인 후 직접 신청하세요. 자동 신청은 하지 않았습니다.
+MSG
+)"
+
+          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=${message}"
