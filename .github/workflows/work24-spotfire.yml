@@ -1,4 +1,4 @@
-name: Work24 Spotfire 33 Monitor
+name: Work24 Spotfire 34 Monitor
 
 on:
   schedule:
@@ -38,13 +38,13 @@ jobs:
             exit 0
           fi
 
-          if grep -Eq "33[[:space:]]*회차|33[[:space:]]*회|31회/33회|32회/33회|tracseTme=33" "$combined"; then
+          if grep -Eq "34[[:space:]]*회차|34[[:space:]]*회|31회/34회|32회/34회|33회/34회|tracseTme=34" "$combined"; then
             echo "found=true" >> "$GITHUB_OUTPUT"
-            evidence="$(grep -Eo "33.{0,60}|.{0,60}33회차|31회/33회|32회/33회|tracseTme=33.{0,80}" "$combined" | head -n 5 | tr '\n' ' ')"
+            evidence="$(grep -Eo "34.{0,60}|.{0,60}34회차|31회/34회|32회/34회|33회/34회|tracseTme=34.{0,80}" "$combined" | head -n 5 | tr '\n' ' ')"
             status="$(grep -Eo "모집[^<[:space:]]+|수강신청인원.{0,80}|모집인원.{0,80}|실시현황.{0,80}" "$combined" | head -n 5 | tr '\n' ' ')"
             {
               echo "evidence<<EOF"
-              echo "${evidence:-33회차 marker detected}"
+              echo "${evidence:-34회차 marker detected}"
               echo "EOF"
               echo "status<<EOF"
               echo "${status:-상태 문구 추출 실패}"
@@ -53,7 +53,7 @@ jobs:
             exit 0
           fi
 
-          echo "No 33rd session yet."
+          echo "No 34th session yet."
           echo "found=false" >> "$GITHUB_OUTPUT"
 
       - name: Send Telegram alert
@@ -69,7 +69,7 @@ jobs:
 
           now="$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
           message="$(printf '%s\n' \
-            '[긴급] Work24 Spotfire 33회차 떴습니다' \
+            '[긴급] Work24 Spotfire 34회차 떴습니다' \
             '' \
             "감지 시각: ${now}" \
             "증거: ${EVIDENCE}" \
