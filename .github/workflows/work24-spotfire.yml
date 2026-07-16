@@ -1,89 +1,225 @@
-name: Work24 Spotfire 34 Monitor
+name: Work24 Spotfire 34 Opening Monitor
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "20 4 21 7 *"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Test mode"
+        required: true
+        default: smoke-check
+        type: choice
+        options:
+          - smoke-check
+          - test-telegram
 
 permissions:
   contents: read
 
 jobs:
-  check:
+  monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 300
     env:
       COURSE_NAME: "Spotfire를 활용한 반도체 공정/결함 상관관계 분석"
-      LIST_URL: "https://www.work24.go.kr/hr/a/a/1100/trnnCrsInf2.do?dghtSe=A&traingMthCd=A&tracseTme=8&endDate=20270707&keyword1=&keyword2=&pageSize=10&orderBy=ASC&startDate_datepicker=2026-07-07&currentTab=1&topMenuYn=&pop=&tracseId=AIG20260000545906&pageRow=10&totamtSuptYn=A&ncsSearchKeyword=&keywordTrngNm=&crseTracseSeNum=&keywordType=1&gb=&keyword=spotfire%EB%A5%BC+%ED%99%9C%EC%9A%A9%ED%95%9C+%EB%B0%98%EB%8F%84%EC%B2%B4+%EA%B3%B5%EC%A0%95%2F%EA%B2%B0%ED%95%A8+%EC%83%81%EA%B4%80%EA%B4%80%EA%B3%84+%EB%B6%84%EC%84%9D&kDgtlYn=&area=00%7C%EC%A0%84%EA%B5%AD+%EC%A0%84%EC%B2%B4&orderKey=2&mberSe=&kdgLinkYn=&srchType=all_type&crseTracseSe=A%7C%EB%94%94%EC%A7%80%ED%84%B8%EC%8B%A0%EA%B8%B0%EC%88%A0%EB%B6%84%EC%95%BC+%EC%A0%84%EC%B2%B4&tranRegister=&mberId=&i2=A&pageId=6&areaSearchKeyword=&programMenuIdentification=EBG020000000313&crseTracseSeKDT=A_KDT%7C%ED%9B%88%EB%A0%A8%EC%9C%A0%ED%98%95+%EC%A0%84%EC%B2%B4&endDate_datepicker=2027-07-07&monthGubun=&pageOrder=2ASC&pageIndex=1&bgrlInstYn=&startDate=20260707&ncs=&gvrnInstt=&selectNCSKeyword=&compareArgArr=&action=trnnCrsInf2Post.do"
-      DETAIL_URL: "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl1.do?tracseId=AIG20250000539953&tracseTme=32&cstmConsTme=&crseTracseSe=C0105&trainstCstmrId=500020049962&tracseReqstsCd=&focusId="
+      EVENT_DATE_KST: "2026-07-21"
+      START_AT_KST: "2026-07-21 14:00:00"
+      END_AT_KST: "2026-07-21 18:00:00"
+      POLL_SECONDS: "15"
+      WORK24_SPOTFIRE_URL: "https://www.work24.go.kr/hr/a/a/1100/trnnCrsInf2.do?dghtSe=A&traingMthCd=A&tracseTme=18&endDate=20270716&keyword1=&keyword2=&pageSize=10&orderBy=ASC&startDate_datepicker=2026-07-16&currentTab=1&topMenuYn=&pop=&tracseId=AIG20250000539948&pageRow=10&totamtSuptYn=A&ncsSearchKeyword=&keywordTrngNm=&crseTracseSeNum=&keywordType=1&gb=&keyword=spotfire&kDgtlYn=&area=00%7C%EC%A0%84%EA%B5%AD+%EC%A0%84%EC%B2%B4&orderKey=2&mberSe=&kdgLinkYn=&srchType=all_type&crseTracseSe=A%7C%EB%94%94%EC%A7%80%ED%84%B8%EC%8B%A0%EA%B8%B0%EC%88%A0%EB%B6%84%EC%95%BC+%EC%A0%84%EC%B2%B4&tranRegister=&mberId=&i2=A&pageId=6&areaSearchKeyword=&programMenuIdentification=EBG020000000313&crseTracseSeKDT=A_KDT%7C%ED%9B%88%EB%A0%A8%EC%9C%A0%ED%98%95+%EC%A0%84%EC%B2%B4&endDate_datepicker=2027-07-16&monthGubun=&pageOrder=2ASC&pageIndex=1&bgrlInstYn=&startDate=20260716&ncs=&gvrnInstt=&selectNCSKeyword=&compareArgArr=&action=trnnCrsInf2Post.do"
+      WORK24_INSTITUTION_URL: "https://www.work24.go.kr/hr/a/a/1100/trnnCrsInf2.do?dghtSe=A&traingMthCd=A&tracseTme=18&endDate=20270716&keyword1=&keyword2=&pageSize=10&orderBy=ASC&startDate_datepicker=2026-07-16&currentTab=1&topMenuYn=&pop=&tracseId=AIG20250000539948&pageRow=10&totamtSuptYn=A&ncsSearchKeyword=&keywordTrngNm=%EB%A0%9B%EC%9C%A0%EC%9D%B8&crseTracseSeNum=&keywordType=1&gb=&keyword=&kDgtlYn=&area=00%7C%EC%A0%84%EA%B5%AD+%EC%A0%84%EC%B2%B4&orderKey=2&mberSe=&kdgLinkYn=&srchType=all_type&crseTracseSe=A%7C%EB%94%94%EC%A7%80%ED%84%B8%EC%8B%A0%EA%B8%B0%EC%88%A0%EB%B6%84%EC%95%BC+%EC%A0%84%EC%B2%B4&tranRegister=&mberId=&i2=A&pageId=6&areaSearchKeyword=&programMenuIdentification=EBG020000000313&crseTracseSeKDT=A_KDT%7C%ED%9B%88%EB%A0%A8%EC%9C%A0%ED%98%95+%EC%A0%84%EC%B2%B4&endDate_datepicker=2027-07-16&monthGubun=&pageOrder=2ASC&pageIndex=1&bgrlInstYn=&startDate=20260716&ncs=&gvrnInstt=&selectNCSKeyword=&compareArgArr=&action=trnnCrsInf2Post.do"
+      WORK24_DETAIL_33_URL: "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl1.do?tracseId=AIG20250000539953&tracseTme=33&cstmConsTme=&crseTracseSe=C0105&trainstCstmrId=500020049962&tracseReqstsCd=&focusId="
+      WORK24_DETAIL_34_URL: "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl1.do?tracseId=AIG20250000539953&tracseTme=34&cstmConsTme=&crseTracseSe=C0105&trainstCstmrId=500020049962&tracseReqstsCd=&focusId="
+      LETUIN_URL: "https://naeildo-letuinedu.com/Lecture/lecView?no=145"
+
     steps:
-      - name: Check Work24 pages
-        id: check
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          list_html="$(mktemp)"
-          detail_html="$(mktemp)"
-          combined="$(mktemp)"
-          user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
-
-          curl -fsSL --compressed --max-time 20 -A "$user_agent" "$LIST_URL" -o "$list_html"
-          curl -fsSL --compressed --max-time 20 -A "$user_agent" "$DETAIL_URL" -o "$detail_html"
-          cat "$list_html" "$detail_html" > "$combined"
-
-          if ! grep -Fq "$COURSE_NAME" "$combined"; then
-            echo "Course marker was not found; skipping alert."
-            echo "found=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if grep -Eq "34[[:space:]]*회차|34[[:space:]]*회|31회/34회|32회/34회|33회/34회|tracseTme=34" "$combined"; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
-            evidence="$(grep -Eo "34.{0,60}|.{0,60}34회차|31회/34회|32회/34회|33회/34회|tracseTme=34.{0,80}" "$combined" | head -n 5 | tr '\n' ' ')"
-            status="$(grep -Eo "모집[^<[:space:]]+|수강신청인원.{0,80}|모집인원.{0,80}|실시현황.{0,80}" "$combined" | head -n 5 | tr '\n' ' ')"
-            {
-              echo "evidence<<EOF"
-              echo "${evidence:-34회차 marker detected}"
-              echo "EOF"
-              echo "status<<EOF"
-              echo "${status:-상태 문구 추출 실패}"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "No 34th session yet."
-          echo "found=false" >> "$GITHUB_OUTPUT"
-
-      - name: Send Telegram alert
-        if: steps.check.outputs.found == 'true'
+      - name: Test Telegram notification
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'test-telegram'
         shell: bash
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          EVIDENCE: ${{ steps.check.outputs.evidence }}
-          STATUS_TEXT: ${{ steps.check.outputs.status }}
         run: |
           set -euo pipefail
 
+          if [[ -z "$TELEGRAM_BOT_TOKEN" || -z "$TELEGRAM_CHAT_ID" ]]; then
+            echo "Telegram secrets are missing."
+            exit 1
+          fi
+
           now="$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
           message="$(printf '%s\n' \
-            '[긴급] Work24 Spotfire 34회차 떴습니다' \
+            '[테스트 성공] Spotfire 34기 알림 연결 확인' \
             '' \
-            "감지 시각: ${now}" \
-            "증거: ${EVIDENCE}" \
-            "상태: ${STATUS_TEXT}" \
-            '' \
-            '상세:' \
-            "${DETAIL_URL}" \
-            '' \
-            '검색:' \
-            "${LIST_URL}" \
-            '' \
-            '로그인 후 직접 신청하세요. 자동 신청은 하지 않았습니다.')"
+            "전송 시각: ${now}" \
+            '새 Telegram Bot Token과 Chat ID가 정상 작동합니다.' \
+            '실제 모집 감지 시에는 고용24 신청 버튼이 가장 먼저 표시됩니다.')"
+          response="$(mktemp)"
 
-          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          curl -fsS -o "$response" -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_CHAT_ID}" \
             -d "disable_web_page_preview=true" \
             --data-urlencode "text=${message}"
+
+          grep -q '"ok":true' "$response"
+          echo "Telegram test message accepted."
+
+      - name: Monitor Work24 first and Letuin second
+        if: github.event_name == 'schedule' || inputs.mode == 'smoke-check'
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set -euo pipefail
+
+          one_shot=false
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            one_shot=true
+          fi
+
+          start_epoch="$(TZ=Asia/Seoul date -d "$START_AT_KST" +%s)"
+          end_epoch="$(TZ=Asia/Seoul date -d "$END_AT_KST" +%s)"
+
+          if [[ "$one_shot" == false ]]; then
+            today_kst="$(TZ=Asia/Seoul date '+%Y-%m-%d')"
+            if [[ "$today_kst" != "$EVENT_DATE_KST" ]]; then
+              echo "Outside the 2026 event date; stopping."
+              exit 0
+            fi
+
+            now_epoch="$(date +%s)"
+            if (( now_epoch < start_epoch )); then
+              wait_seconds=$((start_epoch - now_epoch))
+              echo "Runner ready early; monitoring starts in ${wait_seconds}s."
+              sleep "$wait_seconds"
+            fi
+          fi
+
+          work_dir="$(mktemp -d)"
+          trap 'rm -rf "$work_dir"' EXIT
+          user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36"
+          cycle=0
+
+          fetch_page() {
+            local url="$1"
+            local output="$2"
+            local label="$3"
+
+            if ! curl -fsSL --compressed --retry 2 --retry-delay 1 \
+              --connect-timeout 10 --max-time 20 -A "$user_agent" \
+              "$url" -o "$output"; then
+              : > "$output"
+              echo "${label}: fetch failed; continuing."
+            fi
+          }
+
+          work24_search_open() {
+            local file="$1"
+            grep -Fqi "$COURSE_NAME" "$file" && \
+              grep -Eqi 'tracseTme(=|%3D)34|34[[:space:]]*(회차|회|기)|2026[-./년[:space:]]*0?7[-./월[:space:]]*27|20260727' "$file"
+          }
+
+          work24_detail_open() {
+            local file="$1"
+            grep -Fqi "$COURSE_NAME" "$file" && \
+              grep -Eqi '34[[:space:]]*(회차|회)|2026[-./년[:space:]]*0?7[-./월[:space:]]*27|20260727' "$file"
+          }
+
+          letuin_open() {
+            local file="$1"
+            grep -Fqi "$COURSE_NAME" "$file" && \
+              grep -Eqi '34[[:space:]]*기|2026[-./년[:space:]]*0?7[-./월[:space:]]*27|7[./-]27' "$file"
+          }
+
+          send_alert() {
+            local source="$1"
+            local now="$2"
+            local message
+            local reply_markup
+
+            if [[ -z "$TELEGRAM_BOT_TOKEN" || -z "$TELEGRAM_CHAT_ID" ]]; then
+              echo "Telegram secrets are missing."
+              exit 1
+            fi
+
+            message="$(printf '%s\n' \
+              '[긴급] Spotfire 34기 모집이 열렸습니다' \
+              '' \
+              "감지 위치: ${source}" \
+              "감지 시각: ${now}" \
+              '' \
+              '1. 고용24부터 즉시 신청하세요. 선착순 기준입니다.' \
+              '2. 그 다음 내일도 렛유인에서도 신청하세요.' \
+              '' \
+              '자동 신청은 하지 않았습니다. 아래 버튼을 눌러 직접 로그인 후 신청하세요.')"
+            reply_markup="$(printf '{"inline_keyboard":[[{"text":"1. 고용24 먼저 신청","url":"%s"}],[{"text":"2. 내일도 렛유인 신청","url":"%s"}]]}' \
+              "$WORK24_SPOTFIRE_URL" "$LETUIN_URL")"
+
+            curl -fsS -o /dev/null -X POST \
+              "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -d "chat_id=${TELEGRAM_CHAT_ID}" \
+              -d "disable_web_page_preview=true" \
+              --data-urlencode "text=${message}" \
+              --data-urlencode "reply_markup=${reply_markup}"
+          }
+
+          while true; do
+            now_epoch="$(date +%s)"
+            if [[ "$one_shot" == false ]] && (( now_epoch >= end_epoch )); then
+              echo "Monitoring window ended without detection."
+              exit 0
+            fi
+
+            fetch_page "$WORK24_SPOTFIRE_URL" "$work_dir/work24-spotfire.html" "Work24 Spotfire search" &
+            fetch_page "$WORK24_DETAIL_34_URL" "$work_dir/work24-detail-34.html" "Work24 session 34" &
+
+            if (( cycle % 3 == 0 )); then
+              fetch_page "$WORK24_INSTITUTION_URL" "$work_dir/work24-institution.html" "Work24 Letuin search" &
+              fetch_page "$WORK24_DETAIL_33_URL" "$work_dir/work24-detail-33.html" "Work24 session 33" &
+              fetch_page "$LETUIN_URL" "$work_dir/letuin.html" "Letuin course" &
+            fi
+            wait
+
+            if [[ "$one_shot" == true ]] && \
+              { [[ ! -s "$work_dir/work24-spotfire.html" ]] || \
+                [[ ! -s "$work_dir/work24-detail-34.html" ]] || \
+                [[ ! -s "$work_dir/work24-institution.html" ]] || \
+                [[ ! -s "$work_dir/work24-detail-33.html" ]] || \
+                [[ ! -s "$work_dir/letuin.html" ]]; }; then
+              echo "Smoke check failed: at least one target page could not be fetched."
+              exit 1
+            fi
+
+            source=""
+            if work24_search_open "$work_dir/work24-spotfire.html"; then
+              source="고용24 Spotfire 검색 결과"
+            elif work24_detail_open "$work_dir/work24-detail-34.html"; then
+              source="고용24 34회차 상세 페이지"
+            elif [[ -s "$work_dir/work24-institution.html" ]] && work24_search_open "$work_dir/work24-institution.html"; then
+              source="고용24 렛유인 기관 검색 결과"
+            elif [[ -s "$work_dir/work24-detail-33.html" ]] && work24_search_open "$work_dir/work24-detail-33.html"; then
+              source="고용24 33회차 페이지의 34회차 표시"
+            elif [[ -s "$work_dir/letuin.html" ]] && letuin_open "$work_dir/letuin.html"; then
+              source="내일도 렛유인 34기 일정"
+            fi
+
+            checked_at="$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
+            if [[ -n "$source" ]]; then
+              echo "Opening detected at ${source}."
+              send_alert "$source" "$checked_at"
+              echo "Urgent Telegram alert accepted; stopping to prevent duplicates."
+              exit 0
+            fi
+
+            if [[ "$one_shot" == true ]]; then
+              echo "Smoke check complete: all five pages fetched; 34th intake not detected."
+              exit 0
+            fi
+
+            echo "${checked_at}: no opening yet (cycle ${cycle})."
+            cycle=$((cycle + 1))
+            sleep "$POLL_SECONDS"
+          done
