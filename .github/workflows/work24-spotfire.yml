@@ -55,13 +55,16 @@ jobs:
             "전송 시각: ${now}" \
             '새 Telegram Bot Token과 Chat ID가 정상 작동합니다.' \
             '실제 모집 감지 시에는 고용24 신청 버튼이 가장 먼저 표시됩니다.')"
+          reply_markup="$(printf '{"inline_keyboard":[[{"text":"1. 고용24 먼저 신청","url":"%s"}],[{"text":"2. 내일도 렛유인 신청","url":"%s"}]]}' \
+            "$WORK24_SPOTFIRE_URL" "$LETUIN_URL")"
           response="$(mktemp)"
 
           curl -fsS -o "$response" -X POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_CHAT_ID}" \
             -d "disable_web_page_preview=true" \
-            --data-urlencode "text=${message}"
+            --data-urlencode "text=${message}" \
+            --data-urlencode "reply_markup=${reply_markup}"
 
           grep -q '"ok":true' "$response"
           echo "Telegram test message accepted."
